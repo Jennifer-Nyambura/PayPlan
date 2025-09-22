@@ -1,23 +1,33 @@
 #!/usr/bin/env python3
 
-# Standard library imports
-
-# Remote library imports
-from flask import request
-from flask_restful import Resource
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
 
 # Local imports
-from config import app, db, api
-# Add your model imports
+from config import app, db
+from routes.auth_routes import auth_bp  # auth blueprint
 
+# Database & migration setup
+migrate = Migrate(app, db)
 
-# Views go here!
+# JWT setup
+app.config["JWT_SECRET_KEY"] = "super-secret-key"
+jwt = JWTManager(app)
 
-@app.route('/')
+# Register blueprints
+app.register_blueprint(auth_bp)
+
+# Root route
+@app.route("/")
 def index():
-    return '<h1>Project Server</h1>'
+    return "<h1>Project Server Running...</h1>"
 
-
-if __name__ == '__main__':
+# Run app
+if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()  # optional; Flask-Migrate handles migrations
     app.run(port=5555, debug=True)
+
 
