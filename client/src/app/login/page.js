@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { loginRequest, signupRequest } from "../../utils/api";
+import { loginRequest, signupRequest, fetchCurrentUser } from "../../utils/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,8 +28,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { token, user } = await loginRequest(email, password);
-      login(token, user);
+      // Flask returns { access_token }
+      const { access_token } = await loginRequest(email, password);
+      const user = await fetchCurrentUser(access_token); // fetch /me
+      login(access_token, user);
       router.push("/dashboard");
     } catch (err) {
       setError(err.message || "Login failed");
@@ -45,8 +47,19 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { token, user } = await signupRequest(fullName, email, password);
-      login(token, user);
+      // Build payload to match Flask /register
+      const payload = {
+        username: fullName,
+        email,
+        password,
+        household_id: null, // adjust if needed
+      };
+
+      await signupRequest(payload); // create user
+      // Log in after successful signup
+      const { access_token } = await loginRequest(email, password);
+      const user = await fetchCurrentUser(access_token);
+      login(access_token, user);
       router.push("/dashboard");
     } catch (err) {
       setError(err.message || "Signup failed");
