@@ -4,10 +4,14 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS  # <-- add this
 
 # Local imports
 from config import app, db
 from routes.auth_routes import auth_bp  # auth blueprint
+
+# Enable CORS for all origins (frontend on a different port)
+CORS(app)  # <-- add this right after app is created
 
 # Database & migration setup
 migrate = Migrate(app, db)
@@ -29,4 +33,3 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()  # optional; Flask-Migrate handles migrations
     app.run(port=5555, debug=True)
-
