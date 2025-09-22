@@ -9,7 +9,7 @@ from flask_restful import Resource
 # Local imports
 from config import app, db, api
 # Add your model imports
-
+from models import Expense, PaymentHistory 
 
 # Views go here!
 
@@ -19,5 +19,8 @@ def index():
 
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # only for dev/testing
     app.run(port=5555, debug=True)
+
 
