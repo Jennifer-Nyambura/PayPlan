@@ -1,32 +1,61 @@
-#!/usr/bin/env python3
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from models.user import db, User
+from schemas.user_schema import UserSchema
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager
+auth_bp = Blueprint("auth_bp", __name__)
+user_schema = UserSchema()
 
-# Local imports
-from config import app, db
-from routes.auth_routes import auth_bp  # auth blueprint
+# SIGNUP
+@auth_bp.route("/signup", methods=["POST"])
+def register():
+    data = request.get_json()
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+    household_id = data.get("household_id") or 1
 
-# Database & migration setup
-migrate = Migrate(app, db)
+    if User.query.filter((User.username == username) | (User.email == email)).first():
+        return jsonify({"error": "User already exists"}), 400
 
-# JWT setup
-app.config["JWT_SECRET_KEY"] = "super-secret-key"
-jwt = JWTManager(app)
+    new_user = User(username=username, email=email, household_id=household_id)
+    new_user.set_password(password)
 
-# Register blueprints
-app.register_blueprint(auth_bp)
+    db.session.add(new_user)
+    db.session.commit()
 
-# Root route
-@app.route("/")
-def index():
-    return "<h1>Project Server Running...</h1>"
+    token = create_access_token(identity={"id": new_user.id, "household_id": new_user.household_id})
 
-# Run app
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()  # optional; Flask-Migrate handles migrations
-    app.run(port=5555, debug=True)
+    return jsonify({
+        "access_token": token,
+        "user": user_schema.dump(new_user)
+    }), 201
+
+# LOGIN
+@auth_bp.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.check_password(password):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    token = create_access_token(identity={"id": user.id, "household_id": user.household_id})
+    return jsonify({
+        "access_token": token,
+        "user": user_schema.dump(user)
+    }), 200
+
+# CURRENT USER
+@auth_bp.route("/me", methods=["GET"])
+@jwt_required()
+def get_me():
+    identity = get_jwt_identity()
+    user = User.query.get(identity["id"])
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    return user_schema.dump(user), 200
+
 
