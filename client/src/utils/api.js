@@ -22,7 +22,7 @@ export async function request(path, { method = "GET", body, token, isForm = fals
   let data;
   try {
     data = await res.json();
-  } catch (e) {
+  } catch {
     data = null;
   }
 
@@ -33,17 +33,16 @@ export async function request(path, { method = "GET", body, token, isForm = fals
   return data;
 }
 
-//  LOGIN request 
- 
+// LOGIN request
 export async function loginRequest(email, password) {
+  // Backend returns { access_token: "..." }
   return request("/login", {
     method: "POST",
     body: { email, password },
   });
 }
 
-//  SIGNUP request
- 
+// SIGNUP request 
 export async function signupRequest(payload) {
   return request("/signup", {
     method: "POST",
@@ -51,12 +50,44 @@ export async function signupRequest(payload) {
   });
 }
 
-
-//  Fetch current user 
- 
+// Fetch current user (protected route)
 export async function fetchCurrentUser(token) {
   return request("/me", {
     method: "GET",
+    token,
+  });
+}
+
+/* DASHBOARD HELPERS */
+
+// Fetch all services
+export async function getServices(token) {
+  return request("/services", {
+    method: "GET",
+    token,
+  });
+}
+
+// Fetch upcoming payments
+export async function getUpcomingPayments(token) {
+  return request("/payments/upcoming", {
+    method: "GET",
+    token,
+  });
+}
+
+// Fetch overdue payments
+export async function getOverduePayments(token) {
+  return request("/payments/overdue", {
+    method: "GET",
+    token,
+  });
+}
+
+// Mark payment as paid
+export async function markPaymentAsPaid(paymentId, token) {
+  return request(`/payments/${paymentId}/pay`, {
+    method: "POST",
     token,
   });
 }
