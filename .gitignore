@@ -22,6 +22,7 @@
 pids
 *.pid
 *.seed
+
 # Ignore uploaded files in development.
 /storage/*
 !/storage/.keep
@@ -54,13 +55,16 @@ jspm_packages
 
 # Virtual env metadata
 .venv
+server/venv/
 
 # pytest cache
 .pytest_cache
 __pycache__
 
-# database
+# Database
 *.db
 instance
+
+# Editor/IDE
 .vscode
 package-lock.json
