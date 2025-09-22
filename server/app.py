@@ -1,45 +1,23 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+#!/usr/bin/env python3
 
-# -------------------------
-# App & Database Setup
-# -------------------------
-app = Flask(__name__)
+# Standard library imports
 
-# Use SQLite for now (creates payplan.db file in your server/ folder)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///payplan.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# Remote library imports
+from flask import request
+from flask_restful import Resource
 
-# Database object
-db = SQLAlchemy(app)
+# Local imports
+from config import app, db, api
+# Add your model imports
+from models import User
 
-# Migration object
-migrate = Migrate(app, db)
+# Views go here!
 
-# -------------------------
-# Example Model
-# -------------------------
-class User(db.Model):
-    __tablename__ = "users"
-
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-
-    def __repr__(self):
-        return f"<User {self.username}>"
-
-# -------------------------
-# Simple Route
-# -------------------------
-@app.route("/")
+@app.route('/')
 def index():
-    return "PayPlan Backend is running 🚀"
+    return '<h1>Project Server</h1>'
 
-# -------------------------
-# Run App
-# -------------------------
-if __name__ == "__main__":
-    app.run(debug=True)
+
+if __name__ == '__main__':
+    app.run(port=5555, debug=True)
+
