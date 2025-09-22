@@ -1,7 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from config import db
 
 class User(db.Model):
     __tablename__ = "users"
@@ -11,10 +9,7 @@ class User(db.Model):
     email = db.Column(db.String(120), nullable=False, unique=True)
     password_hash = db.Column(db.String(200), nullable=False)
 
-    household_id = db.Column(db.Integer, db.ForeignKey("households.id"), nullable=False)
-
-    # Relationship (one household → many users)
-    household = db.relationship("Household", back_populates="users")
+    household_id = db.Column(db.Integer, nullable=True)  # made nullable for signup
 
     # Password handling
     def set_password(self, password):
