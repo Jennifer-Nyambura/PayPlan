@@ -10,12 +10,15 @@ from flask_restful import Resource
 from config import app, db, api
 # Add your model imports
 from models import Expense, PaymentHistory 
+from routes.expense_routes import ExpenseResource
 
 # Views go here!
 
-@app.route('/')
-def index():
-    return '<h1>Project Server</h1>'
+api.add_resource(ExpenseResource, '/expenses')
+
+#@app.route('/')
+#def index():
+    #return '<h1>Project Server</h1>'
 
 
 if __name__ == '__main__':
